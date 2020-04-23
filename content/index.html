@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>Server Sent Events</title>
+	<link rel="shortcut icon" href="favicon.png">
+	<link rel="stylesheet" href="/css/bootstrap.css" type="text/css" />
+	<link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+</head>
+
+<body>
+	<script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="./node_modules/xterm/lib/xterm.js"></script>
+
+	<!--#include file="/nav.html"-->
+
+	<div class="container">
+		<p>Execute a command on the server, the results will be sent back as SSE:</p>
+		<div class="form-group">
+			<button class="btn-primary" id="execute">Execute</button>
+		</div>
+
+		<div id="terminal"></div>
+	</div>
+
+	<script>
+		$(document).ready(function () {
+			console.log("go")
+
+			execute = document.getElementById('execute')
+
+			execute.addEventListener("click", function () {
+				console.log('Clicked')
+				if (!!window.EventSource) {
+					var source = new EventSource('/exec/cmd')
+
+					source.addEventListener('message', function (e) {
+						term.write(e.data + "\r\n")
+					}, false)
+
+					source.addEventListener('open', function (e) {
+						// Connection was opened.
+						console.log('Connection open')
+					}, false)
+
+					source.addEventListener('error', function (e) {
+						console.log(e.target.readyState)
+						if (e.target.readyState == EventSource.CONNECTING) {
+							console.log('connecting ...')
+						}
+						else if (e.target.readyState == EventSource.CLOSED) {
+							// Connection was closed.
+							console.log('Connection closed')
+							source.close()
+						}
+						else {
+							console.log(e)
+						}
+					}, false)
+				} else {
+					// Result to xhr polling :(
+				}
+			})
+
+			console.log("internal module")
+
+			const term = new Terminal()
+
+			term.open(document.getElementById('terminal'))
+			term.resize(100, 30)
+		})
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sse-deployment
+  labels:
+    app: sse
+    purpose: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sse
+      purpose: example
+  template:
+    metadata:
+      labels:
+        app: sse
+        purpose: example
+    spec:
+      containers:
+      - name: sse-example
+        image: aykay76/sse:latest
+        ports:
+        - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: sse-example-service
+spec:
+  selector:
+    app: sse
+    purpose: example
+  type: NodePort
+  ports:
+  - name: sseapi
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
